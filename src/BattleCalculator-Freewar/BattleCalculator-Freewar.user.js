@@ -277,7 +277,7 @@ function getCookie(c_name) {
 	}
 }
 
- /*
+/*
  * Gets the value of the given player stat. The value is saved via webstorage or as cookie.
  * @param statName The name of the player stat to get
  * @returns The value of the given player stat, greater equals 0 or -1 if the value is invalid or does not exist
@@ -286,7 +286,7 @@ function getStatValue(statName) {
 	var value;
 	if (isSupportingWebStorage()) {
 		// Use webstorage
-		value = localStorage.getItem('freewarBattleCalculatorStat' + statName);
+		value = sessionStorage.getItem('freewarBattleCalculatorStat' + statName);
 	} else {
 		// Fall back to cookies
 		value = getCookie('freewarBattleCalculatorStat' + statName);

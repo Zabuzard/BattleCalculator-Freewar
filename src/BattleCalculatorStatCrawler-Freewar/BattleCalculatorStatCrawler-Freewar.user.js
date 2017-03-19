@@ -49,10 +49,10 @@ function setStatValue(statName, value) {
 	
 	if (isSupportingWebStorage()) {
 		// Use webstorage
-		localStorage.setItem('freewarBattleCalculatorStat' + statName, valueAsNumber);
+		sessionStorage.setItem('freewarBattleCalculatorStat' + statName, valueAsNumber);
 	} else {
 		// Fall back to cookies
-		createCookie('freewarBattleCalculatorStat' + statName, valueAsNumber + '', 365);
+		createCookie('freewarBattleCalculatorStat' + statName, valueAsNumber + '', 2);
 	}
 }
 
