@@ -44,10 +44,10 @@ function routine() {
  * @return True if a NPC was found, false if not
  */
 function processElement(cellElement) {
-	// Fix player data
-	var playerExpectedLife = 300;
-	var playerStrength = 3120 + 80;
-	var playerDefense = 1150 + 130;
+	// Fix fallback player data
+	var playerExpectedLife = extractStatValue('Lifepoints', 300);
+	var playerStrength = extractStatValue('Attackpower', 3179 + 80);
+	var playerDefense = extractStatValue('Defensepower', 1173 + 130);
 	
 	// Threshold at which lifepoint loss is critical
 	var critLifeThreshold = 100;
@@ -253,6 +253,74 @@ function firstCharToUpperCase(str) {
 }
 
 /*
+ * Checks whether the browser does support webstorage or not.
+ * @returns True if it is supported, false if not
+ */
+function isSupportingWebStorage() {
+	return typeof(Storage) !== "undefined";
+}
+
+/*
+ * Gets the content of the cookie with the given name
+ * @param c_name The name of the cookie to get
+ * @returns The content of the given cookie
+ */
+function getCookie(c_name) {
+	var i, x, y, ARRcookies = document.cookie.split(';');
+	for (i = 0; i < ARRcookies.length; i++) {
+		x = ARRcookies[i].substr(0, ARRcookies[i].indexOf('='));
+		y = ARRcookies[i].substr(ARRcookies[i].indexOf('=') + 1);
+		x = x.replace(/^\s+|\s+$/g,'');
+		if (x == c_name) {
+			return unescape(y);
+		}
+	}
+}
+
+ /*
+ * Gets the value of the given player stat. The value is saved via webstorage or as cookie.
+ * @param statName The name of the player stat to get
+ * @returns The value of the given player stat, greater equals 0 or -1 if the value is invalid or does not exist
+ */
+function getStatValue(statName) {
+	var value;
+	if (isSupportingWebStorage()) {
+		// Use webstorage
+		value = localStorage.getItem('freewarBattleCalculatorStat' + statName);
+	} else {
+		// Fall back to cookies
+		value = getCookie('freewarBattleCalculatorStat' + statName);
+	}
+	
+	var valueAsNumber = parseInt(value);
+	
+	// If the value does not exist or contains invalid data, return -1
+	if (value == null || value == '' || valueAsNumber < 0) {
+		return -1;
+	} else {
+		return valueAsNumber;
+	}
+}
+
+ /*
+ * Extracts the value of the given player stat. The value is saved via webstorage or as cookie.
+ * @param statName The name of the player stat to get
+ * @param fallbackValue The value to use if the extracted value is inexistent or invalid
+ * @returns The extracted value of the given player stat, greater equals 0 or the fallback value if
+ *   the extracted value is invalid or does not exist
+ */
+function extractStatValue(statName, fallbackValue) {
+	var extractedValue = getStatValue(statName);
+	
+	// If value is invalid, fall back
+	if (extractedValue == -1) {
+		return fallbackValue;
+	} else {
+		return extractedValue;
+	}
+}
+
+/*
  * Initializes the critical special NPC data structure.
  */
 function initCriticalSpecialNpc() {
@@ -262,7 +330,9 @@ function initCriticalSpecialNpc() {
 	critSpecialNpc['Dickhäutiger Graustein-Bär'] = true;
 	critSpecialNpc['Gepanzertes Undaron'] = true;
 	critSpecialNpc['Glitschige Dunkelsee-Qualle'] = true;
+	critSpecialNpc['Lebende Mauer'] = true;
 	critSpecialNpc['Robuster Morschgreifer'] = true;
+	critSpecialNpc['Sandiger Wirbelwind'] = true;
 	critSpecialNpc['Schnelle Bernstein-Raupe'] = true;
 	critSpecialNpc['Schneller Stororaptor'] = true;
 	critSpecialNpc['Schneller Tempelkrabbler'] = true;
@@ -313,6 +383,7 @@ function initNonCriticalSpecialNpc() {
 	nonCritSpecialNpc['Fliegender Todesfarn'] = true;
 	nonCritSpecialNpc['Gefallenes Lichtwesen'] = true;
 	nonCritSpecialNpc['Giftgeist von Narubia'] = true;
+	nonCritSpecialNpc['Glutschleim'] = true;
 	nonCritSpecialNpc['Goldhornziege'] = true;
 	nonCritSpecialNpc['Goldkraken'] = true;
 	nonCritSpecialNpc['Grabräuber'] = true;
@@ -370,6 +441,8 @@ function initNonCriticalSpecialNpc() {
 	nonCritSpecialNpc['Wasser-Schemen'] = true;
 	nonCritSpecialNpc['Wetterkontroll-Magier'] = true;
 	nonCritSpecialNpc['Wucherwurzelbaum'] = true;
+	nonCritSpecialNpc['Wütender Stachelkäfer'] = true;
+	nonCritSpecialNpc['Äonenjäger'] = true;
 	
 	// Group-NPC
 	nonCritSpecialNpc['26-köpfiger Salamander'] = true;
@@ -430,7 +503,7 @@ function initNpcData() {
 	// NPC Data Begin
 	npcData['26-köpfiger Salamander'] = [67, 25000];
 	npcData['Aasgeier'] = [2, 10];
-	npcData['Abgesandter der Eiswelt'] = [34, 6000];
+	npcData['Abgesandter der Eiswelt '] = [34, 6000];
 	npcData['Abgestürzte Lichtpflanze'] = [5, 45];
 	npcData['Abgestürzter Weltraum-Kraken'] = [13, 200];
 	npcData['Absorbierende Dunkelsee-Qualle'] = [360, 189];
@@ -490,7 +563,7 @@ function initNpcData() {
 	npcData['Blauwaldwurm'] = [2, 30];
 	npcData['Blumenbeißer'] = [2, 7];
 	npcData['Blumenkasten'] = [0, 1000];
-	npcData['Blutameise'] = [0, 0];
+	npcData['Blutameise'] = [1, 1];
 	npcData['Blutapfelbaum'] = [25, 12500];
 	npcData['Blutblatt'] = [1, 1];
 	npcData['Blutblob'] = [40, 1600];
@@ -505,9 +578,10 @@ function initNpcData() {
 	npcData['Blutkrähe'] = [32, 1024];
 	npcData['Blutkäfer'] = [1, 4];
 	npcData['Blutprobenwesen'] = [0, 0];
-	npcData['Blutrabe'] = [27, 729];
+	npcData['Blutrabe'] = [22, 484];
+	npcData['Blutresistenz-NPC'] = [0, 0];
 	npcData['Blutspinne'] = [2, 4];
-	npcData['Blutspinnennetz'] = [7, 49];
+	npcData['Blutspinnennetz'] = [3, 9];
 	npcData['Blutwanze'] = [3, 9];
 	npcData['Blutwurm'] = [4, 18];
 	npcData['Bockiger Stier'] = [0, 0];
@@ -530,7 +604,7 @@ function initNpcData() {
 	npcData['Dicker Zukuvogel'] = [2, 15];
 	npcData['Dickhäutiger Goldballenwurm'] = [340, 180];
 	npcData['Dickhäutiger Graustein-Bär'] = [23, 68];
-	npcData['Diebstahlfalle'] = [0, 100];
+	npcData['Diebstahlfalle '] = [0, 100];
 	npcData['Diebstahlfallen-Verwalter'] = [42, 10000];
 	npcData['Diener des Feuers'] = [150, 20000];
 	npcData['Diener von Beispieluser'] = [0, 0];
@@ -583,6 +657,7 @@ function initNpcData() {
 	npcData['Enormer Graustein-Bär'] = [49, 153];
 	npcData['Entflohener Mörder'] = [215, 9000];
 	npcData['Entlaufene Geisterschabe'] = [3, 17];
+	npcData['Entspannte Flachassel'] = [2, 25];
 	npcData['Erd-Skelkos'] = [8, 300];
 	npcData['Erdfisch'] = [4, 25];
 	npcData['Erdkäfer'] = [1, 2];
@@ -595,7 +670,7 @@ function initNpcData() {
 	npcData['Exil-Nomade'] = [5, 50];
 	npcData['Exotischer Fisch'] = [2, 5];
 	npcData['Experimental-Phasenwesen'] = [123, 1234567890];
-	npcData['Explosionsfalle'] = [0, 100];
+	npcData['Explosionsfalle '] = [0, 100];
 	npcData['Explosiver Tempelschleim'] = [2, 19];
 	npcData['Fahrender Händler'] = [0, 1000];
 	npcData['Fallensteller'] = [8, 90];
@@ -605,7 +680,6 @@ function initNpcData() {
 	npcData['Felsenkriecher'] = [762, 648000];
 	npcData['Felsenschreier'] = [10, 1];
 	npcData['Felsenwurm'] = [4, 20];
-	npcData['Ferdolische Moorschleuder'] = [0, 0];
 	npcData['Feuer-Schemen'] = [0, 0];
 	npcData['Feuergeist'] = [25, 3000];
 	npcData['Feuerlaub-Echse'] = [6, 70];
@@ -615,6 +689,7 @@ function initNpcData() {
 	npcData['Feuerwolf'] = [2, 9];
 	npcData['Feueröl-Händler'] = [0, 1000];
 	npcData['Finstereis-Bewacher'] = [1, 100];
+	npcData['Flachassel'] = [2, 25];
 	npcData['Flammendes Glühwürmchen'] = [1, 2];
 	npcData['Flammenwurm'] = [2, 15];
 	npcData['Flecken-Wolf'] = [2, 18];
@@ -659,7 +734,7 @@ function initNpcData() {
 	npcData['Gelbbart-Yeti'] = [23, 2200];
 	npcData['Gelbkatze'] = [1, 3];
 	npcData['Gemeiner Unterwelt-Dämon'] = [45, 3000];
-	npcData['Gepanzertes Undaron'] = [22, 80];
+	npcData['Gepanzertes Undaron'] = [21, 80];
 	npcData['Gepforn'] = [3, 20];
 	npcData['Geröllschlange'] = [31, 2200];
 	npcData['Geröllwiesenschlange'] = [2, 17];
@@ -667,7 +742,7 @@ function initNpcData() {
 	npcData['Geschwächtes Kaklatron'] = [1, 7];
 	npcData['Geysir-Schlucker'] = [1200, 200000];
 	npcData['Giftbeißer'] = [4, 45];
-	npcData['Giftfalle'] = [0, 100];
+	npcData['Giftfalle '] = [0, 100];
 	npcData['Giftgeist von Narubia'] = [12, 17000];
 	npcData['Giftgrabl'] = [10, 100];
 	npcData['Giftiger Saugfisch'] = [2, 18];
@@ -733,7 +808,7 @@ function initNpcData() {
 	npcData['Hangstelzer'] = [46, 6500];
 	npcData['Harmloser Giftsporenpilz'] = [3, 24];
 	npcData['Hase'] = [1, 2];
-	npcData['Heilender Baum'] = [8, 90];
+	npcData['Heilender Baum '] = [8, 90];
 	npcData['Herrscher der eisigen Dämonen'] = [64, 25000];
 	npcData['Herz des Blutwaldes'] = [33, 400000];
 	npcData['Hinterlistiger Stororaptor'] = [1630, 551000];
@@ -791,7 +866,7 @@ function initNpcData() {
 	npcData['Kleines Schlangentier'] = [1, 8];
 	npcData['Knochenpilz'] = [0, 5];
 	npcData['Knochensammler'] = [5, 55];
-	npcData['Knorpel-Monster aus Draht'] = [10, 3000];
+	npcData['Knorpel-Monster aus Draht '] = [10, 3000];
 	npcData['Knorrige Wurzel'] = [41, 1681];
 	npcData['Knunglo'] = [10, 120];
 	npcData['Knurrender Goldballenwurm'] = [560, 15000];
@@ -849,7 +924,7 @@ function initNpcData() {
 	npcData['Mineralstein'] = [0, 0];
 	npcData['Moorgeist'] = [7, 70];
 	npcData['Moosgeflecht'] = [2, 25];
-	npcData['Moosschildkröte'] = [390, 54278];
+	npcData['Moosschildkröte'] = [241, 33817];
 	npcData['Moosspinne'] = [2, 25];
 	npcData['Mopfchen'] = [0, 1];
 	npcData['Mormdat'] = [3, 10];
@@ -861,8 +936,10 @@ function initNpcData() {
 	npcData['Mutierter Morschgreifer'] = [300, 800];
 	npcData['Mutiges Mormdat'] = [3, 10];
 	npcData['Mutter der Geysir-Schlucker'] = [35, 5000];
+	npcData['Mächtige Phasenbarriere'] = [0, 90];
 	npcData['Nachtfledermaus'] = [10, 120];
 	npcData['Nachtgonk'] = [7, 80];
+	npcData['Nachtgonk '] = [7, 80];
 	npcData['Nachtgonk im dunklen Haus'] = [7, 40];
 	npcData['Nachtschattenraupe'] = [3, 10];
 	npcData['Narbiger Schneewurm'] = [2, 35];
@@ -901,7 +978,7 @@ function initNpcData() {
 	npcData['Pfeilschnecke'] = [15, 150];
 	npcData['Phasenassel'] = [2, 45];
 	npcData['Phasenbarriere'] = [0, 30];
-	npcData['Phasenenergiefalle'] = [0, 100];
+	npcData['Phasenenergiefalle '] = [0, 100];
 	npcData['Phasenfalter'] = [135, 45000];
 	npcData['Phasenfuchs'] = [7, 61];
 	npcData['Phasengeier'] = [9, 90];
@@ -941,11 +1018,12 @@ function initNpcData() {
 	npcData['Pilzwachtel'] = [1, 3];
 	npcData['Pironer'] = [35, 10000];
 	npcData['Plätscherfluss-Krokodil'] = [586, 112000];
-	npcData['Portal'] = [0, 100];
+	npcData['Polarisations-Otter'] = [20, 300];
+	npcData['Portal '] = [0, 100];
 	npcData['Portal des Feuers'] = [0, 10];
 	npcData['Portal des Wassers'] = [0, 10];
 	npcData['Portal in die Unterwelt'] = [0, 100];
-	npcData['Portalstab'] = [0, 100];
+	npcData['Portalstab '] = [0, 100];
 	npcData['Portalstab-Anbeter'] = [20, 250];
 	npcData['Randalierer'] = [8, 80];
 	npcData['Reen'] = [6, 50];
@@ -964,6 +1042,7 @@ function initNpcData() {
 	npcData['Ringraupe'] = [3, 10];
 	npcData['Robuster Morschgreifer'] = [220, 104];
 	npcData['Robuster Spindelschreiter'] = [176, 0];
+	npcData['Rotbandwurm'] = [50, 2000];
 	npcData['Rote Landkoralle'] = [10, 100];
 	npcData['Rote Riesenlibelle'] = [1, 15];
 	npcData['Rote Steinspinne'] = [3, 10];
@@ -991,6 +1070,7 @@ function initNpcData() {
 	npcData['Sandfresserwurm'] = [6, 70];
 	npcData['Sandgeist'] = [4, 20];
 	npcData['Sandgolem'] = [1, 26];
+	npcData['Sandiger Wirbelwind'] = [800, 7000];
 	npcData['Sandvogel'] = [8, 80];
 	npcData['Saugfisch'] = [2, 16];
 	npcData['Savannen-Vogel'] = [2, 12];
@@ -1003,23 +1083,23 @@ function initNpcData() {
 	npcData['Schattenkreatur Jalakori'] = [55, 30000];
 	npcData['Schattenkreatur Mantori'] = [30, 20000];
 	npcData['Schattenkreatur Turwakori'] = [350, 30000];
-	npcData['Schattenkreatur XY'] = [1, 1];
+	npcData['Schattenkreatur XY '] = [1, 1];
 	npcData['Schattenkrokodil'] = [21, 3000];
 	npcData['Schattenmoos'] = [3, 60];
 	npcData['Schattensalamander'] = [35, 3200];
 	npcData['Ein Schattenwesen'] = [2, 10];
 	npcData['Schattenwiesel'] = [1, 2];
 	npcData['Schattenwolf'] = [7, 20];
-	npcData['Schatzsucher'] = [20, 2000];
+	npcData['Schatzsucher '] = [20, 2000];
 	npcData['Schaufelmaulwurf'] = [15, 150];
 	npcData['Schillernder Küstling'] = [5, 62];
 	npcData['Schlammkaktus'] = [33, 800];
 	npcData['Schleimraupe'] = [12, 180];
-	npcData['Schleuderfalle'] = [0, 100];
+	npcData['Schleuderfalle '] = [0, 100];
 	npcData['Schlingende Lianenpeitsche'] = [26, 5000];
 	npcData['Schlurum'] = [15, 250];
 	npcData['Schmatzende Blattspinne'] = [2, 25];
-	npcData['Schmerzfalle'] = [0, 100];
+	npcData['Schmerzfalle '] = [0, 100];
 	npcData['Schmieriger Geschäftemacher'] = [15, 350];
 	npcData['Schneefisch'] = [1, 7];
 	npcData['Schneehase'] = [2, 8];
@@ -1032,6 +1112,7 @@ function initNpcData() {
 	npcData['Schneeworan'] = [8, 200];
 	npcData['Schneewurm'] = [2, 35];
 	npcData['Schnelle Bernstein-Raupe'] = [90, 49];
+	npcData['Schneller Stachelsprungkrebs'] = [1674, 3132800];
 	npcData['Schneller Steinmolch'] = [10, 120];
 	npcData['Schneller Stororaptor'] = [240, 124];
 	npcData['Schneller Tempelkrabbler'] = [2, 50];
@@ -1048,7 +1129,7 @@ function initNpcData() {
 	npcData['Schwarzwespen'] = [5, 40];
 	npcData['Schwebende Goldkutsche'] = [7, 5000];
 	npcData['Schwimmendes Tentakel'] = [6, 40];
-	npcData['Schwächefalle'] = [0, 100];
+	npcData['Schwächefalle '] = [0, 100];
 	npcData['Seeschlamm'] = [9, 100];
 	npcData['Seichtwasserpilz'] = [2, 70];
 	npcData['Seltsames Tier'] = [1, 2];
@@ -1083,7 +1164,8 @@ function initNpcData() {
 	npcData['Stachelkäfer'] = [2, 25];
 	npcData['Stachelschildkröte'] = [590, 79000];
 	npcData['Stachelschreck'] = [7, 80];
-	npcData['Starrfalle'] = [0, 100];
+	npcData['Stachelsprungkrebs'] = [80, 3000];
+	npcData['Starrfalle '] = [0, 100];
 	npcData['Staub-Maus'] = [1, 7];
 	npcData['Staub-Skelett'] = [5, 50];
 	npcData['Staubassel'] = [2, 25];
@@ -1095,13 +1177,13 @@ function initNpcData() {
 	npcData['Staubschleifer-Königin'] = [29, 12000];
 	npcData['Stechmücken'] = [2, 15];
 	npcData['Stegovar'] = [2, 17];
-	npcData['Stein-Koloss'] = [35, 150000];
+	npcData['Stein-Koloss'] = [35, 50000];
 	npcData['Stein-Skelkos'] = [8, 120];
 	npcData['Stein-Tentakel'] = [6, 40];
 	npcData['Steingolem'] = [12, 320];
 	npcData['Steinhuhn'] = [2, 30];
 	npcData['Steinkatze'] = [1, 3];
-	npcData['Steinkraller'] = [846, 72300];
+	npcData['Steinkraller'] = [369, 18400];
 	npcData['Steinkratzkäfer'] = [2, 25];
 	npcData['Steinkäfer'] = [2, 20];
 	npcData['Steinmolch'] = [4, 40];
@@ -1113,7 +1195,7 @@ function initNpcData() {
 	npcData['Stepto-Waran'] = [190, 152];
 	npcData['Sterbliche Waldratte'] = [1, 7];
 	npcData['Sternenzerstörer'] = [100, 60000];
-	npcData['Stolperfalle'] = [0, 100];
+	npcData['Stolperfalle '] = [0, 100];
 	npcData['Stororaptor'] = [480, 68000];
 	npcData['Strandlokil'] = [8, 90];
 	npcData['Strauchkäfer'] = [2, 8];
@@ -1158,7 +1240,7 @@ function initNpcData() {
 	npcData['Untoter Bürger'] = [13, 200];
 	npcData['Untoter Bürgermeister'] = [135, 21000];
 	npcData['Untoter Winterbürger'] = [13, 200];
-	npcData['Unverwüstliches Undaron'] = [30, 15];
+	npcData['Unverwüstliches Undaron'] = [30, 6];
 	npcData['Uralte Bluteiche'] = [1496, 2238016];
 	npcData['Uralter Unterwelt-Dämon'] = [3500, 650000];
 	npcData['Urwaldkuh'] = [1, 3];
@@ -1201,7 +1283,7 @@ function initNpcData() {
 	npcData['Wassertentakel'] = [5, 60];
 	npcData['Wawruz'] = [2, 10];
 	npcData['Wegelagerer'] = [10, 280];
-	npcData['Weinende Kastanie'] = [1505, 2265025];
+	npcData['Weinende Kastanie'] = [12, 144];
 	npcData['Weiser Ontolon'] = [7500, 1800000];
 	npcData['Weltenwandler'] = [140, 100000];
 	npcData['Weltraum-Kraken'] = [13, 200];
@@ -1213,6 +1295,7 @@ function initNpcData() {
 	npcData['Wildwasserkrebs'] = [192, 38500];
 	npcData['Wind-Schemen'] = [0, 0];
 	npcData['Windgeist'] = [5, 40];
+	npcData['Windgeist '] = [5, 40];
 	npcData['Wippschwanzmöwe'] = [28, 3650];
 	npcData['Wirbelnder Rindenspeer'] = [91, 8281];
 	npcData['Wogenreiter'] = [63, 12248];
@@ -1222,7 +1305,7 @@ function initNpcData() {
 	npcData['Wolkenschaf'] = [2, 8];
 	npcData['Wolliges Goldschaf'] = [1, 5];
 	npcData['Wuchernde Efeuranke'] = [6, 80];
-	npcData['Wucherwurzelbaum'] = [90, 10000];
+	npcData['Wucherwurzelbaum '] = [90, 10000];
 	npcData['Wurzelkralle'] = [190, 36100];
 	npcData['Wurzelnde Blutpeitsche'] = [84, 7056];
 	npcData['Wurzelwurm'] = [2, 25];
@@ -1238,14 +1321,15 @@ function initNpcData() {
 	npcData['Wüstenschreck'] = [3, 10];
 	npcData['Wüstenspinne'] = [2, 7];
 	npcData['Wütende Mooswurzel'] = [33, 530];
+	npcData['Wütender Stachelkäfer'] = [2, 25];
 	npcData['Zauberer der Bergwiesen'] = [14, 300];
-	npcData['Zielscheibe'] = [1, 40];
+	npcData['Zielscheibe '] = [1, 40];
 	npcData['Zitternde Mooswurzel'] = [2, 20];
 	npcData['Zottelfell-Hirsch'] = [0, 0];
 	npcData['Zukuvogel'] = [2, 15];
 	npcData['Zweibeinige Waldspinne'] = [3, 25];
 	npcData['Zäher Ontolon'] = [500, 265];
-	npcData['Zäher Spindelschreiter'] = [730, 0];
+	npcData['Zäher Spindelschreiter'] = [288, 0];
 	// NPC Data End
 }
 
