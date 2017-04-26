@@ -1,6 +1,7 @@
 package de.zabuza.battleCalculator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,15 +21,15 @@ public final class BattleCalculatorTool {
 	/**
 	 * Path to the file that contains external data.
 	 */
-	private static final String FILEPATH = "";
-	/**
-	 * Separator used for data.
-	 */
-	private static final String SEPARATOR = ";";
+	private static final File FILEPATH = new File(System.getProperty("user.home"), "Desktop");
 	/**
 	 * Name of the NPC data map in javascript.
 	 */
 	private static final String JS_MAP_NAME = "npcData";
+	/**
+	 * Separator used for data.
+	 */
+	private static final String SEPARATOR = ";";
 
 	/**
 	 * Gets the content of a file and returns it as list of lines.
@@ -39,19 +40,17 @@ public final class BattleCalculatorTool {
 	 * @throws IOException
 	 *             If an I/O-Exception occurs
 	 */
-	public static List<String> getFileContent(String path) throws IOException {
-		BufferedReader file = new BufferedReader(new InputStreamReader(
-				new FileInputStream(path)));
-		List<String> content = new ArrayList<String>();
+	public static List<String> getFileContent(final File path) throws IOException {
+		try (final BufferedReader file = new BufferedReader(new InputStreamReader(new FileInputStream(path)));) {
+			List<String> content = new ArrayList<>();
 
-		String line = file.readLine();
-		while (line != null) {
-			content.add(line);
-			line = file.readLine();
+			String line = file.readLine();
+			while (line != null) {
+				content.add(line);
+				line = file.readLine();
+			}
+			return content;
 		}
-
-		file.close();
-		return content;
 	}
 
 	/**
@@ -61,23 +60,29 @@ public final class BattleCalculatorTool {
 	 * @param args
 	 *            Not supported
 	 * @throws IOException
+	 *             If an I/O-Exception occurred
 	 */
 	public static void main(final String[] args) throws IOException {
 
 		String filename = "npcData.csv";
-		List<String> list = getFileContent(FILEPATH + filename);
+		List<String> list = getFileContent(new File(FILEPATH, filename));
 		printNpcDataAsJsMap(processNpcData(list));
 	}
 
-	private static void printNpcDataAsJsMap(
-			final HashMap<String, Pair<Integer, Integer>> npcData) {
+	/**
+	 * Prints the given NPC data as Javascript map to the standard console.
+	 * 
+	 * @param npcData
+	 *            The data to print
+	 */
+	private static void printNpcDataAsJsMap(final HashMap<String, Pair<Integer, Integer>> npcData) {
 		System.out.println("\t// NPC Data Begin");
 		for (Entry<String, Pair<Integer, Integer>> entry : npcData.entrySet()) {
 			// npcData['26-köpfiger Salamander'] = [67, 25000];
 
 			String name = entry.getKey();
-			Integer strength = entry.getValue().getFirstValue();
-			Integer life = entry.getValue().getSecondValue();
+			Integer strength = entry.getValue().getFirst();
+			Integer life = entry.getValue().getSecond();
 
 			String line = "\t" + JS_MAP_NAME + "['";
 			line += name + "'] = [";
@@ -95,8 +100,7 @@ public final class BattleCalculatorTool {
 	 *            Data to process
 	 * @return Processed NPC data
 	 */
-	private static HashMap<String, Pair<Integer, Integer>> processNpcData(
-			final List<String> rawNpcData) {
+	private static HashMap<String, Pair<Integer, Integer>> processNpcData(final List<String> rawNpcData) {
 		LinkedHashMap<String, Pair<Integer, Integer>> npcData = new LinkedHashMap<>();
 
 		for (String dataLine : rawNpcData) {
@@ -110,14 +114,14 @@ public final class BattleCalculatorTool {
 			int life = Integer.parseInt(data[2]);
 
 			if (!npcData.containsKey(name)) {
-				npcData.put(name, new Pair<>(strength, life));
+				npcData.put(name, new Pair<>(Integer.valueOf(strength), Integer.valueOf(life)));
 			} else {
 				Pair<Integer, Integer> npcValues = npcData.get(name);
-				if (npcValues.getFirstValue() < strength) {
-					npcValues.setFirstValue(strength);
+				if (npcValues.getFirst().intValue() < strength) {
+					npcValues.setFirst(Integer.valueOf(strength));
 				}
-				if (npcValues.getSecondValue() < life) {
-					npcValues.setSecondValue(life);
+				if (npcValues.getSecond().intValue() < life) {
+					npcValues.setSecond(Integer.valueOf(life));
 				}
 			}
 		}
@@ -133,18 +137,8 @@ public final class BattleCalculatorTool {
 	 * @return Validated NPC name
 	 */
 	private static String validateNpcName(final String name) {
-		if (name.equals("Wolf der Finsternis")) {
-			return "Der Wolf der Finsternis";
-		} else if (name.equals("Nebelkröte")) {
-			return "Die Nebelkröte";
-		} else if (name.equals("Nebelwesen")) {
-			return "Das Nebelwesen";
-		} else if (name.equals("Lava Echse")) {
+		if (name.equals("Lava Echse")) {
 			return "Lava-Echse";
-		} else if (name.equals("Schattenwesen")) {
-			return "Ein Schattenwesen";
-		} else if (name.equals("Nebelkrähe")) {
-			return "Die Nebelkrähe";
 		} else if (name.equals("Magier des Schutzes")) {
 			return "Der Magier des Schutzes";
 		}

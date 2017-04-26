@@ -1,28 +1,132 @@
 package de.zabuza.battleCalculator;
 
-public final class Pair<K, V> {
+/**
+ * Object for generic pairs which hold two objects of given types.
+ * 
+ * @author Zabuza {@literal <zabuza.dev@gmail.com>}
+ *
+ * @param <E1>
+ *            First type
+ * @param <E2>
+ *            Second type
+ */
+public class Pair<E1, E2> {
 
-	private K m_FirstValue;
-	private V m_SecondValue;
+	/**
+	 * First element of the pair.
+	 */
+	private E1 mFirstElement;
+	/**
+	 * Second element of the pair.
+	 */
+	private E2 mSecondElement;
 
-	public Pair(final K firstValue, final V secondValue) {
-		m_FirstValue = firstValue;
-		m_SecondValue = secondValue;
+	/**
+	 * Creates a new pair holding the two given objects.
+	 * 
+	 * @param first
+	 *            First object of the pair
+	 * @param second
+	 *            Second object of the pair
+	 */
+	public Pair(final E1 first, final E2 second) {
+		this.mFirstElement = first;
+		this.mSecondElement = second;
 	}
 
-	public K getFirstValue() {
-		return m_FirstValue;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof Pair)) {
+			return false;
+		}
+		final Pair<?, ?> other = (Pair<?, ?>) obj;
+		if (this.mFirstElement == null) {
+			if (other.mFirstElement != null) {
+				return false;
+			}
+		} else if (!this.mFirstElement.equals(other.mFirstElement)) {
+			return false;
+		}
+		if (this.mSecondElement == null) {
+			if (other.mSecondElement != null) {
+				return false;
+			}
+		} else if (!this.mSecondElement.equals(other.mSecondElement)) {
+			return false;
+		}
+		return true;
 	}
 
-	public V getSecondValue() {
-		return m_SecondValue;
+	/**
+	 * Gets the first element of the pair.
+	 * 
+	 * @return The first element of the pair
+	 */
+	public E1 getFirst() {
+		return this.mFirstElement;
 	}
 
-	public void setFirstValue(K firstValue) {
-		m_FirstValue = firstValue;
+	/**
+	 * Gets the second element of the pair.
+	 * 
+	 * @return The second element of the pair
+	 */
+	public E2 getSecond() {
+		return this.mSecondElement;
 	}
 
-	public void setSecondValue(V secondValue) {
-		m_SecondValue = secondValue;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.mFirstElement == null) ? 0 : this.mFirstElement.hashCode());
+		result = prime * result + ((this.mSecondElement == null) ? 0 : this.mSecondElement.hashCode());
+		return result;
+	}
+
+	/**
+	 * Sets the first element of the pair.
+	 * 
+	 * @param element
+	 *            The element to set
+	 */
+	public void setFirst(final E1 element) {
+		this.mFirstElement = element;
+	}
+
+	/**
+	 * Sets the second element of the pair.
+	 * 
+	 * @param element
+	 *            The element to set
+	 */
+	public void setSecond(final E2 element) {
+		this.mSecondElement = element;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "[" + this.mFirstElement + ", " + this.mSecondElement + "]";
 	}
 }
