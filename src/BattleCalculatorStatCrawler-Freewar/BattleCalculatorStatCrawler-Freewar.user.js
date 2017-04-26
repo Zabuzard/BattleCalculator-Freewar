@@ -69,7 +69,7 @@ function routine() {
 	// Extract attack power
 	var attackpower = Number($('p#listrow_attackp').text().match(/\d+/)[0]);
 	var attackpowerWeapon = $('p#listrow_attackp').text().match(/\+\d+/);
-	if (attackpowerWeapon.length > 0) {
+	if (attackpowerWeapon != null && attackpowerWeapon.length > 0) {
 		// Strip the '+' symbol
 		attackpowerWeapon = Number(attackpowerWeapon[0].substring(1));
 		// Add the power of the weapon
@@ -80,7 +80,7 @@ function routine() {
 	// Extract defense power
 	var defensepower = Number($('p#listrow_defensep').text().match(/\d+/)[0]);
 	var defensepowerWeapon = $('p#listrow_defensep').text().match(/\+\d+/);
-	if (defensepowerWeapon.length > 0) {
+	if (defensepowerWeapon != null && defensepowerWeapon.length > 0) {
 		// Strip the '+' symbol
 		defensepowerWeapon = Number(defensepowerWeapon[0].substring(1));
 		// Add the power of the weapon
