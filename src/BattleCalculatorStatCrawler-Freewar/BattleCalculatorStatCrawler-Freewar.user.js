@@ -2,11 +2,12 @@
 // @name        BattleCalculatorStatCrawler - Freewar
 // @namespace   Zabuza
 // @description Tool for the 'BattleCalculator - Freewar' which extracts and saves player stats like lifepoints, attack and defense power.
-// @include     *.freewar.de/freewar/internal/item.php*
+// @match     *.freewar.de/freewar/internal/item.php*
 // @version     1
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant       none
 // ==/UserScript==
+/* global $ */
 
 /*
  * Creates a cookie with the given data. If the cookie already exists, it is overriden.
@@ -19,8 +20,6 @@ function createCookie(name, value, days) {
 		var date = new Date();
 		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
 		var expires = '; expires=' + date.toGMTString();
-	} else {
-		var expires = '';
 	}
 	document.cookie = name + '=' + value + expires + '; path=/';
 }
@@ -41,12 +40,10 @@ function isSupportingWebStorage() {
  */
 function setStatValue(statName, value) {
 	var valueAsNumber = parseInt(value);
-	
 	// Abort if the value is invalid
 	if (value == null || value == '' || valueAsNumber < 0) {
 		return;
 	}
-	
 	if (isSupportingWebStorage()) {
 		// Use webstorage
 		sessionStorage.setItem('freewarBattleCalculatorStat' + statName, valueAsNumber);
@@ -61,11 +58,9 @@ function setStatValue(statName, value) {
  */
 function routine() {
 	// Extract player stats from menu and store them
-	
 	// Extract lifepoints
 	var lifepoints = $('p#listrow_lifep span').text();
-	setStatValue('Lifepoints', lifepoints);
-	
+    	setStatValue('Lifepoints', lifepoints.replace("(", ""));
 	// Extract attack power
 	var attackpower = Number($('p#listrow_attackp').text().match(/\d+/)[0]);
 	var attackpowerWeapon = $('p#listrow_attackp').text().match(/\+\d+/);
@@ -76,7 +71,6 @@ function routine() {
 		attackpower += attackpowerWeapon;
 	}
 	setStatValue('Attackpower', attackpower);
-	
 	// Extract defense power
 	var defensepower = Number($('p#listrow_defensep').text().match(/\d+/)[0]);
 	var defensepowerWeapon = $('p#listrow_defensep').text().match(/\+\d+/);
