@@ -2,11 +2,12 @@
 // @name        BattleCalculator - Freewar
 // @namespace   Zabuza
 // @description Removes fastattack links for NPCs where the outcome of a battle is loosing for the player.
-// @include     *.freewar.de/freewar/internal/main.php*
+// @match     *.freewar.de/freewar/internal/main.php*
 // @version     1
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant       none
 // ==/UserScript==
+/* global $ */
 
 /*
  * Routine function of the script.
@@ -15,19 +16,15 @@ function routine() {
 	initNpcData();
 	initCriticalSpecialNpc();
 	initNonCriticalSpecialNpc();
-	
 	var foundNpc = false;
-	
 	// First search for multiple NPC
 	$('.listusersrow table tr td').each(function(index, cellElement) {
 		var foundNpcInElement = processElement(cellElement);
-		
 		// Only update if a NPC was found
 		if(foundNpcInElement) {
 			foundNpc = true;
 		}
 	});
-	
 	// If there where no multiple NPC there might be a single NPC
 	if (!foundNpc) {
 		$('.listusersrow').each(function(index, cellElement) {
@@ -48,25 +45,19 @@ function processElement(cellElement) {
 	var playerExpectedLife = extractStatValue('Lifepoints', 300);
 	var playerStrength = extractStatValue('Attackpower', 3179 + 80);
 	var playerDefense = extractStatValue('Defensepower', 1173 + 130);
-	
 	// Threshold at which lifepoint loss is critical
 	var critLifeThreshold = 100;
-	
 	var npcNameElement = $(cellElement).find('b');
 	var npcFastAttackElement = $(cellElement).find('.fastattack');
-	
 	if ($(npcNameElement).length > 0 && $(npcFastAttackElement).length > 0) {
 		// Skip if NPC was already processed before
 		if ($(npcNameElement).hasClass('processedNPC')) {
 			return $(npcNameElement).hasClass('knownNPC');
 		}
-		
 		var npcName = $(npcNameElement).text();
 		// Remove stuff like '(Aggressiv)' from the name
 		npcName = npcName.replace(/\(.*\)/gi, '').trim();
-		
 		var lifeLoss = computeOutcome(playerExpectedLife, playerStrength, playerDefense, npcName);
-		
 		if (isCriticalSpecialNpc(npcName)) {
 			// NPC is a critical special NPC
 			$(npcFastAttackElement).css('color', '#F00F0F');
@@ -82,7 +73,7 @@ function processElement(cellElement) {
 			$(npcFastAttackElement).removeAttr('onclick');
 			$(npcFastAttackElement).hide();
 			$(npcNameElement).addClass('processedNPC knownNPC');
-		} else  if (lifeLoss == -1) {
+		} else if (lifeLoss == -1) {
 			// Player looses
 			$(npcFastAttackElement).css('color', '#F00F0F');
 			$(npcFastAttackElement).append(' (defeat)');
@@ -122,16 +113,13 @@ function processElement(cellElement) {
 function computeOutcome(playerLife, playerStrength, playerDefense, npcName) {
 	var npcStrength = getNpcStrength(npcName);
 	var npcLife = getNpcLife(npcName);
-	
 	if (npcStrength < 0 || npcLife < 0) {
 		return -2;
 	}
-	
 	// A hit deals at most one point of damage
 	var howManyHits = Math.ceil(npcLife / playerStrength);
 	var lifeLossPerHit = Math.max(1, npcStrength - playerDefense);
 	var lifeLoss = Math.max(1, Math.ceil(howManyHits * lifeLossPerHit));
-	
 	if (lifeLoss >= playerLife) {
 		return -1;
 	} else {
@@ -148,7 +136,6 @@ function computeOutcome(playerLife, playerStrength, playerDefense, npcName) {
  */
 function getNpcStrength(npcName) {
 	var strength = 0;
-	
 	if (npcName in npcData) {
 		strength = npcData[npcName][0];
 	} else {
@@ -158,7 +145,6 @@ function getNpcStrength(npcName) {
 			strength = npcData[upperedNpcName][0];
 		}
 	}
-	
 	// If NPC data could not be found or strength is 0, NPC is unknown
 	if (strength == 0) {
 		return -1;
@@ -176,7 +162,6 @@ function getNpcStrength(npcName) {
  */
 function getNpcLife(npcName) {
 	var life = 0;
-	
 	if (npcName in npcData) {
 		life = npcData[npcName][1];
 	} else {
@@ -186,7 +171,6 @@ function getNpcLife(npcName) {
 			life = npcData[upperedNpcName][1];
 		}
 	}
-	
 	// If NPC data could not be found or life is 0, NPC is unknown
 	if (life == 0) {
 		return -1;
@@ -204,7 +188,6 @@ function getNpcLife(npcName) {
  */
 function isCriticalSpecialNpc(npcName) {
 	var foundNpc = false;
-	
 	if (npcName in critSpecialNpc) {
 		foundNpc = true;
 	} else {
@@ -214,7 +197,6 @@ function isCriticalSpecialNpc(npcName) {
 			foundNpc = true;
 		}
 	}
-	
 	return foundNpc;
 }
 
@@ -227,7 +209,6 @@ function isCriticalSpecialNpc(npcName) {
  */
 function isNonCriticalSpecialNpc(npcName) {
 	var foundNpc = false;
-	
 	if (npcName in nonCritSpecialNpc) {
 		foundNpc = true;
 	} else {
@@ -237,7 +218,6 @@ function isNonCriticalSpecialNpc(npcName) {
 			foundNpc = true;
 		}
 	}
-	
 	return foundNpc;
 }
 
@@ -291,9 +271,7 @@ function getStatValue(statName) {
 		// Fall back to cookies
 		value = getCookie('freewarBattleCalculatorStat' + statName);
 	}
-	
 	var valueAsNumber = parseInt(value);
-	
 	// If the value does not exist or contains invalid data, return -1
 	if (value == null || value == '' || valueAsNumber < 0) {
 		return -1;
@@ -311,7 +289,6 @@ function getStatValue(statName) {
  */
 function extractStatValue(statName, fallbackValue) {
 	var extractedValue = getStatValue(statName);
-	
 	// If value is invalid, fall back
 	if (extractedValue == -1) {
 		return fallbackValue;
@@ -342,7 +319,6 @@ function initCriticalSpecialNpc() {
 	critSpecialNpc['Wachsamer Frostwolf'] = true;
 	critSpecialNpc['Wendige Glypra'] = true;
 	critSpecialNpc['Zäher Spindelschreiter'] = true;
-	
 	// Super Resistance NPC
 	critSpecialNpc['Absorbierende Dunkelsee-Qualle'] = true;
 	critSpecialNpc['Alter Frostwolf'] = true;
@@ -359,7 +335,6 @@ function initCriticalSpecialNpc() {
 	critSpecialNpc['Schnellflatter-Schmetterling'] = true;
 	critSpecialNpc['Unverwüstliches Undaron'] = true;
 	critSpecialNpc['Zäher Ontolon'] = true;
-	
 	// Special exeptions
 	critSpecialNpc['kräftiger Graustein-Bär'] = true;
 }
@@ -443,7 +418,6 @@ function initNonCriticalSpecialNpc() {
 	nonCritSpecialNpc['Wucherwurzelbaum'] = true;
 	nonCritSpecialNpc['Wütender Stachelkäfer'] = true;
 	nonCritSpecialNpc['Äonenjäger'] = true;
-	
 	// Group-NPC
 	nonCritSpecialNpc['26-köpfiger Salamander'] = true;
 	nonCritSpecialNpc['Angepasster Ontolon'] = true;
