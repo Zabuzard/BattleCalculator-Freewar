@@ -8,7 +8,21 @@
 // @grant       none
 // ==/UserScript==
 /* global $ */
+    var targetNode = document.querySelector('.listusersrow, .listusersrow table tr td');
+    if (targetNode) {
+      var observerOptions = {
+        childList: true,
+        subtree: true
+      };
 
+      var observer = new MutationObserver(function(mutationsList) {
+        routine();
+      });
+
+      observer.observe(targetNode, observerOptions);
+    } else {
+      //console.error("Target node with class 'listusersrow' or 'listusersrow table tr td' not found!");
+    }
 /*
  * Creates a cookie with the given data. If the cookie already exists, it is overriden.
  * @param name The name of the cookie to create
