@@ -8,7 +8,21 @@
 // @grant       none
 // ==/UserScript==
 /* global $ */
+    var targetNode = document.querySelector('.listusersrow, .listusersrow table tr td');
+    if (targetNode) {
+      var observerOptions = {
+        childList: true,
+        subtree: true
+      };
 
+      var observer = new MutationObserver(function(mutationsList) {
+        routine();
+      });
+
+      observer.observe(targetNode, observerOptions);
+    } else {
+      //console.error("Target node with class 'listusersrow' or 'listusersrow table tr td' not found!");
+    }
 /*
  * Routine function of the script.
  */
@@ -75,10 +89,12 @@ function processElement(cellElement) {
 			$(npcNameElement).addClass('processedNPC knownNPC');
 		} else if (lifeLoss == -1) {
 			// Player looses
-			$(npcFastAttackElement).css('color', '#F00F0F');
-			$(npcFastAttackElement).append(' (defeat)');
 			$(npcFastAttackElement).removeAttr('href');
 			$(npcFastAttackElement).removeAttr('onclick');
+            $(npcFastAttackElement).off('click');
+            $('.fastattack').before('<span style="color:red; font-weight:bold;">Defeat</span>');
+            $('.fastattack').remove();
+            $('a:contains("Angreifen")').remove();
 			$(npcNameElement).addClass('processedNPC knownNPC');
 			return true;
 		} else if (lifeLoss == -2){
@@ -92,8 +108,10 @@ function processElement(cellElement) {
 			if (lifeLoss >= critLifeThreshold || npcName == 'Undaron') {
 				$(npcFastAttackElement).css('color', '#E7971F');
 			}
-			$(npcFastAttackElement).append(' (-' + lifeLoss + ' LP)');
+		//	$(npcFastAttackElement).append(' (-' + lifeLoss + ' LP)');
 			$(npcNameElement).addClass('processedNPC knownNPC');
+            $(npcFastAttackElement).css('color', '#006400');
+            $(npcFastAttackElement).append(' - LS: ' + lifeLoss + ' - NL: ' + (playerExpectedLife - lifeLoss));
 			return true;
 		}
 	}
