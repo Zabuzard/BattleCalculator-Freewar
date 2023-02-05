@@ -92,9 +92,7 @@ function processElement(cellElement) {
 			$(npcFastAttackElement).removeAttr('href');
 			$(npcFastAttackElement).removeAttr('onclick');
             $(npcFastAttackElement).off('click');
-            $('.fastattack').before('<span style="color:red; font-weight:bold;">Defeat</span>');
-            $('.fastattack').remove();
-            $('a:contains("Angreifen")').remove();
+            $(npcFastAttackElement).text('Defeat').css({color: 'red',fontWeight: 'bold'});
 			$(npcNameElement).addClass('processedNPC knownNPC');
 			return true;
 		} else if (lifeLoss == -2){
