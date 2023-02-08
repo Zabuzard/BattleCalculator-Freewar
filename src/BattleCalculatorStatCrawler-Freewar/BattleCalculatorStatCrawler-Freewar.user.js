@@ -8,21 +8,20 @@
 // @grant       none
 // ==/UserScript==
 /* global $ */
-    var targetNode = document.querySelector('.listusersrow, .listusersrow table tr td');
-    if (targetNode) {
-      var observerOptions = {
-        childList: true,
-        subtree: true
-      };
+var targetNode = document.querySelector('.listusersrow, .listusersrow table tr td');
+if (targetNode) {
+	var observerOptions = {
+		childList: true,
+		subtree: true
+	};
 
-      var observer = new MutationObserver(function(mutationsList) {
-        routine();
-      });
+	var observer = new MutationObserver(function(mutationsList) {
+		routine();
+	});
 
-      observer.observe(targetNode, observerOptions);
-    } else {
-      //console.error("Target node with class 'listusersrow' or 'listusersrow table tr td' not found!");
-    }
+	observer.observe(targetNode, observerOptions);
+}
+
 /*
  * Creates a cookie with the given data. If the cookie already exists, it is overriden.
  * @param name The name of the cookie to create
@@ -74,7 +73,7 @@ function routine() {
 	// Extract player stats from menu and store them
 	// Extract lifepoints
 	var lifepoints = $('p#listrow_lifep span').text();
-    	setStatValue('Lifepoints', lifepoints.replace("(", ""));
+	setStatValue('Lifepoints', lifepoints.replace("(", ""));
 	// Extract attack power
 	var attackpower = Number($('p#listrow_attackp').text().match(/\d+/)[0]);
 	var attackpowerWeapon = $('p#listrow_attackp').text().match(/\+\d+/);
