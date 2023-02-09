@@ -105,7 +105,7 @@ function processElement(cellElement) {
 			$(npcFastAttackElement).removeAttr('onclick');
 			$(npcFastAttackElement).hide();
 			$(npcNameElement).addClass('processedNPC knownNPC');
-		} else if (initIgnoreNpcData(npcName) && npcAutoAttack == true) {
+		} else if (initIgnoreNpcData(npcName) && npcAutoAttack) {
 			// nothing because this is your ignore list for auto attack if set to true
 		} else if (lifeLoss == -1) {
 			// Player looses
@@ -133,7 +133,7 @@ function processElement(cellElement) {
 			$(npcFastAttackElement).css('color', '#006400');
 			$(npcFastAttackElement).append(' ( -' + lifeLoss + ' LP, = ' + (playerExpectedLife - lifeLoss) + ' LP )');
 			// Npc auto attack if enable
-			if (npcAutoAttack == true) {
+			if (npcAutoAttack) {
 				const randomWait = Math.floor(Math.random() * (2000 - 500 + 1) + 500);
 				setTimeout(function() {
 				$(npcFastAttackElement).trigger('click');
