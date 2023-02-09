@@ -36,6 +36,11 @@ document.addEventListener("click", function(event) {
 document.dispatchEvent(new Event("click"));
 
 /*
+ * Auto attack - use this at your own risk - false by default
+ */
+var npcAutoAttack = false;
+
+/*
  * Routine function of the script.
  */
 function routine() {
@@ -100,8 +105,8 @@ function processElement(cellElement) {
 			$(npcFastAttackElement).removeAttr('onclick');
 			$(npcFastAttackElement).hide();
 			$(npcNameElement).addClass('processedNPC knownNPC');
-		} else if (initIgnoreNpcData(npcName)) {
-			// nothing
+		} else if (initIgnoreNpcData(npcName) && npcAutoAttack == true) {
+			// nothing because this is your ignore list for auto attack if set to true
 		} else if (lifeLoss == -1) {
 			// Player looses
 			$(npcFastAttackElement).removeAttr('href');
@@ -127,10 +132,12 @@ function processElement(cellElement) {
 			$(npcNameElement).addClass('processedNPC knownNPC');
 			$(npcFastAttackElement).css('color', '#006400');
 			$(npcFastAttackElement).append(' ( -' + lifeLoss + ' LP, = ' + (playerExpectedLife - lifeLoss) + ' LP )');
-			const randomWait = Math.floor(Math.random() * (2000 - 500 + 1) + 500);
-			setTimeout(function() {
-				// $(npcFastAttackElement).trigger('click'); - use this at your own risk...
-			}, randomWait);
+			// Npc auto attack if enable
+			if (npcAutoAttack == true) {
+				const randomWait = Math.floor(Math.random() * (2000 - 500 + 1) + 500);
+				setTimeout(function() {
+				$(npcFastAttackElement).trigger('click');
+				}, randomWait)};
 			return true;
 		}
 	}
@@ -334,12 +341,16 @@ function extractStatValue(statName, fallbackValue) {
 	}
 }
 
+/*
+ * Initializes the ignore list NPC data structure.
+ */
 function initIgnoreNpcData() {
-	// Ignore
+	// Ignore NPC
 	npcData['Sprühregenwurm'] = [3, 25];
 	npcData['Alter Mann'] = [1, 3];
 	npcData['Undaron'] = [1, 10];
 }
+
 /*
  * Initializes the critical special NPC data structure.
  */
