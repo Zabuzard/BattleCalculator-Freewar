@@ -73,7 +73,10 @@ function routine() {
 	// Extract player stats from menu and store them
 	// Extract lifepoints
 	var lifepoints = $('p#listrow_lifep span').text();
-	setStatValue('Lifepoints', lifepoints.replace("(", ""));
+	if (lifepoints.includes('(')) {
+		lifepoints = lifepoints.replace("(", "").replace(".", "");
+	}
+	setStatValue('Lifepoints', lifepoints);
 	// Extract attack power
 	var attackpower = Number($('p#listrow_attackp').text().match(/\d+/)[0]);
 	var attackpowerWeapon = $('p#listrow_attackp').text().match(/\+\d+/);
