@@ -2,7 +2,7 @@
 // @name        BattleCalculator - Freewar
 // @namespace   Zabuza
 // @description Removes fastattack links for NPCs where the outcome of a battle is loosing for the player.
-// @match     *.freewar.de/freewar/internal/main.php*
+// @include     *.freewar.de/freewar/internal/main.php*
 // @version     1
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant       none
