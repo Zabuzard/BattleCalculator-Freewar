@@ -130,7 +130,7 @@ function processElement(cellElement) {
 				$(npcFastAttackElement).css('color', '#E7971F');
 			}
 			$(npcNameElement).addClass('processedNPC knownNPC');
-			$(npcFastAttackElement).css('color', '#006400');
+			$(npcFastAttackElement).css('color', '#73D773');
 			$(npcFastAttackElement).append(' ( -' + lifeLoss + ' LP, = ' + (playerExpectedLife - lifeLoss) + ' LP )');
 			// Npc auto attack if enable
 			if (npcAutoAttack) {
