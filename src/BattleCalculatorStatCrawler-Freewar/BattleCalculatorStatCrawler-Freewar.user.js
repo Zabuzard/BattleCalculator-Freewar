@@ -2,7 +2,7 @@
 // @name        BattleCalculatorStatCrawler - Freewar
 // @namespace   Zabuza
 // @description Tool for the 'BattleCalculator - Freewar' which extracts and saves player stats like lifepoints, attack and defense power.
-// @match     *.freewar.de/freewar/internal/item.php*
+// @include     *.freewar.de/freewar/internal/item.php*
 // @version     1
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant       none
