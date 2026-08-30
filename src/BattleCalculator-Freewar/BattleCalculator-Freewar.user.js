@@ -29,7 +29,7 @@ var battleCalculatorResultClass = 'battlecalculator-result';
  * re-run the routine whenever the NPC container changes.
  */
 
-var targetNode = document.querySelector('.listusersrow.npcrow');
+var targetNode = document.querySelector('.listusersrow');
 
 if (targetNode) {
 	var observerOptions = {
@@ -72,17 +72,22 @@ document.dispatchEvent(new Event("click"));
 /*
  * Routine function of the script.
  */
-
 function routine() {
-	initNpcData();
-	initCriticalSpecialNpc();
-	initNonCriticalSpecialNpc();
+  try {
+    initNpcData();
+    initCriticalSpecialNpc();
+    initNonCriticalSpecialNpc();
 
-	$('.listusersrow.npcrow').each(function(index, cellElement) {
-		processElement(cellElement);
-	});
-  
-  setTimeout(routine, 500);
+    $('.listusersrow.npcrow').each(function(index, cellElement) {
+      try {
+        processElement(cellElement);
+      } catch (e) {
+        console.error('BattleCalculator processElement error:', e, cellElement);
+      }
+    });
+  } catch (e) {
+    console.error('BattleCalculator routine error:', e);
+  }
 }
 
 
@@ -2099,5 +2104,8 @@ var critSpecialNpc = new Object();
 var nonCritSpecialNpc = new Object();
 
 
-// Start the routine function
+// Run periodically
+setInterval(routine, 500);
+
+// Start first run
 routine();
