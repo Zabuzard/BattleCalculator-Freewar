@@ -235,7 +235,7 @@ function processElement(cellElement) {
 			'unknown'
 		);
 
-		$npcFastAttackElement.css('color', '#0D4BF2');
+		$npcFastAttackElement.css('color', '#040088');
 
 		$npcFastAttackElement.data('battlecalculator-known', false);
 
