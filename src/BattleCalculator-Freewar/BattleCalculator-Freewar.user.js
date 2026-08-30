@@ -2,7 +2,7 @@
 // @name        BattleCalculator - Freewar
 // @namespace   Zabuza
 // @description Removes fastattack links for NPCs where the outcome of a battle is loosing for the player.
-// @include     *.freewar.de/freewar/internal/main.php*
+// @include     *.freewar.de/freewar/internal/frset.php*
 // @version     2
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant       none
@@ -21,52 +21,87 @@ var npcAutoAttack = false;
 // This is intentionally attached to .fastattack rather than the NPC name.
 var battleCalculatorResultClass = 'battlecalculator-result';
 
+function getMainDocument() {
+  try {
+    var frame = document.querySelector('frame[name="mainFrame"]');
 
-/*
- * Mutation observer
- *
- * Freewar dynamically changes parts of the NPC list. We therefore
- * re-run the routine whenever the NPC container changes.
- */
+    if (!frame) {
+      return null;
+    }
 
-var targetNode = document.querySelector('.listusersrow');
+    return frame.contentDocument;
 
-if (targetNode) {
-	var observerOptions = {
-		childList: true,
-		subtree: true
-	};
-
-	var observer = new MutationObserver(function(mutationsList) {
-		routine();
-	});
-
-	observer.observe(targetNode, observerOptions);
+  } catch (e) {
+    console.error('getMainDocument failed:', e);
+    return null;
+  }
 }
 
-
 /*
- * Click listener
+ * Mutation observer / event listener management
  *
- * Re-run the calculator after a fastattack click because Freewar may
- * replace/rebuild the NPC element after the attack.
+ * mainFrame can be completely reloaded when attacking an NPC.
+ * Therefore the observer and click listener must be attached again
+ * whenever mainFrame gets a new document.
  */
 
-var listenerRunning = false;
+var observedDocument = null;
+var observer = null;
+var listenerDocument = null;
 
-document.addEventListener("click", function(event) {
-	if (!listenerRunning) {
-		listenerRunning = true;
+function setupMainFrame() {
+  var doc = getMainDocument();
 
-		if (event.target.matches('.fastattack')) {
-			routine();
-		}
+  // mainFrame isn't available yet.
+  if (!doc) {
+    return;
+  }
 
-		listenerRunning = false;
-	}
-});
+  // Nothing changed; our observer/listener are still valid.
+  if (doc === observedDocument) {
+    return;
+  }
 
-document.dispatchEvent(new Event("click"));
+  observedDocument = doc;
+
+  /*
+     * MutationObserver
+     */
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+
+  var targetNode = doc.querySelector('.listusersrow');
+
+  if (targetNode) {
+    observer = new MutationObserver(function(mutationsList) {
+      routine();
+    });
+
+    observer.observe(targetNode, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+
+  /*
+     * Click listener
+     */
+  if (listenerDocument !== doc) {
+    listenerDocument = doc;
+
+    doc.addEventListener('click', function(event) {
+      if (event.target.matches('.fastattack')) {
+        routine();
+      }
+    });
+  }
+
+  // Process the newly loaded frame immediately.
+  routine();
+}
 
 
 /*
@@ -74,17 +109,29 @@ document.dispatchEvent(new Event("click"));
  */
 function routine() {
   try {
+    var doc = getMainDocument();
+    if (!doc) {
+      return;
+    }
+
     initNpcData();
     initCriticalSpecialNpc();
     initNonCriticalSpecialNpc();
 
-    $('.listusersrow.npcrow').each(function(index, cellElement) {
+    var npcs = doc.querySelectorAll('.listusersrow.npcrow');
+
+    for (var i = 0; i < npcs.length; i++) {
       try {
-        processElement(cellElement);
+        processElement(npcs[i]);
       } catch (e) {
-        console.error('BattleCalculator processElement error:', e, cellElement);
+        console.error(
+          'BattleCalculator processElement error:',
+          e,
+          npcs[i]
+        );
       }
-    });
+    }
+
   } catch (e) {
     console.error('BattleCalculator routine error:', e);
   }
@@ -163,6 +210,7 @@ function processElement(cellElement) {
 		$npcFastAttackElement.css('color', '#F00F0F');
 		$npcFastAttackElement.removeAttr('href');
 		$npcFastAttackElement.removeAttr('onclick');
+    $npcFastAttackElement.off('click');
 
 		$npcFastAttackElement.data('battlecalculator-known', true);
 
@@ -185,7 +233,7 @@ function processElement(cellElement) {
 		$npcFastAttackElement.css('color', '#F00F0F');
 		$npcFastAttackElement.removeAttr('href');
 		$npcFastAttackElement.removeAttr('onclick');
-		$npcFastAttackElement.hide();
+		$npcFastAttackElement.off('click');
 
 		$npcFastAttackElement.data('battlecalculator-known', true);
 
@@ -2104,8 +2152,24 @@ var critSpecialNpc = new Object();
 var nonCritSpecialNpc = new Object();
 
 
-// Run periodically
-setInterval(routine, 500);
+/*
+ * Main watchdog.
+ *
+ * This lives in frset.php, so it survives mainFrame reloads.
+ *
+ * It does two things:
+ *
+ * 1. Makes sure the current mainFrame has an observer.
+ * 2. Runs the calculator every 100 ms.
+ */
+setInterval(function() {
+    setupMainFrame();
+    routine();
+}, 100);
 
-// Start first run
+
+/*
+ * Initial setup.
+ */
+setupMainFrame();
 routine();
