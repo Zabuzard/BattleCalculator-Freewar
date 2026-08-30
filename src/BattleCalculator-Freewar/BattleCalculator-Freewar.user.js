@@ -2168,7 +2168,10 @@ function initNpcData() {
     npcData['Zäher Spindelschreiter'] = [153, 85];
     npcData['Zähnefletschender Wachhund'] = [0, 2500];
     npcData['Äonenjäger'] = [176, 132435];
-	// NPC Data End
+	  // NPC Data End
+    
+    // Manual Corrections
+    npcData['Abgesandter der Eiswelt'] = [34, 6000];
 }
 
 
