@@ -222,7 +222,7 @@ function processElement(cellElement) {
 	 * Non-critical special NPC
 	 */
 
-	if (isNonCriticalSpecialNpc(npcName)) {
+	if (isNonCriticalSpecialNpc(npcName, cellElement)) {
 		// NPC is a non-critical special NPC
 
 		addBattleCalculatorResult(
@@ -262,7 +262,7 @@ function processElement(cellElement) {
 
 		addBattleCalculatorResult(
 			$npcFastAttackElement,
-			'Defeat',
+			' (Defeat)',
 			'defeat'
 		);
 
@@ -519,14 +519,22 @@ function isCriticalSpecialNpc(npcName) {
 /*
  * Returns whether the given NPC is a non critical special NPC.
  *
- * @param npcName The name of the NPC
+ * An NPC is considered non-critical if:
+ * - it is explicitly listed in nonCritSpecialNpc, or
+ * - the NPC row contains "(Unique-NPC", or
+ * - the NPC row contains "(Gruppen-NPC".
+ *
+ * @param npcName The NPC name
+ * @param cellElement The complete NPC row element
  *
  * @return True if the given NPC is a non critical special NPC, false if not.
  */
-
-function isNonCriticalSpecialNpc(npcName) {
+function isNonCriticalSpecialNpc(npcName, cellElement) {
 	var foundNpc = false;
 
+	/*
+	 * Static non-critical special NPC list
+	 */
 	if (npcName in nonCritSpecialNpc) {
 		foundNpc = true;
 	} else {
@@ -534,6 +542,23 @@ function isNonCriticalSpecialNpc(npcName) {
 		var upperedNpcName = firstCharToUpperCase(npcName);
 
 		if (upperedNpcName in nonCritSpecialNpc) {
+			foundNpc = true;
+		}
+	}
+
+
+	/*
+	 * Dynamic Unique-NPC / Gruppen-NPC detection
+	 *
+	 * The type information is outside the <b> NPC name element,
+	 * so inspect the complete NPC row.
+	 */
+	if (!foundNpc && cellElement) {
+		var rowText = cellElement.textContent || '';
+
+		if (/\(Unique-NPC\b/i.test(rowText)) {
+			foundNpc = true;
+		} else if (/\(Gruppen-NPC\b/i.test(rowText)) {
 			foundNpc = true;
 		}
 	}
@@ -683,8 +708,9 @@ function initCriticalSpecialNpc() {
     critSpecialNpc['Unverwüstliches Undaron'] = true;
     critSpecialNpc['Zäher Ontolon'] = true;
 	  // Special exeptions
-	critSpecialNpc['kräftiger Graustein-Bär'] = true;
+  	critSpecialNpc['kräftiger Graustein-Bär'] = true;
   	critSpecialNpc['Spindelschreiter'] = true;
+  	critSpecialNpc['Schmerzstein'] = true;
 }
 
 /*
