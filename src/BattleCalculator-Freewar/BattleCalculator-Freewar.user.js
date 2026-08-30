@@ -29,7 +29,7 @@ var battleCalculatorResultClass = 'battlecalculator-result';
  * re-run the routine whenever the NPC container changes.
  */
 
-var targetNode = document.querySelector('.listusersrow.npcrow.npctypeNP');
+var targetNode = document.querySelector('.listusersrow.npcrow');
 
 if (targetNode) {
 	var observerOptions = {
@@ -78,7 +78,7 @@ function routine() {
 	initCriticalSpecialNpc();
 	initNonCriticalSpecialNpc();
 
-	$('.listusersrow.npcrow.npctypeNPC').each(function(index, cellElement) {
+	$('.listusersrow.npcrow').each(function(index, cellElement) {
 		processElement(cellElement);
 	});
   
