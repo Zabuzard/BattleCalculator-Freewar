@@ -30,13 +30,6 @@ function getMainDocument() {
   }
 }
 
-/*
- * Mutation observer / event listener management
- *
- * mainFrame can be completely reloaded when attacking an NPC.
- * Therefore the observer and click listener must be attached again
- * whenever mainFrame gets a new document.
- */
 var observedDocument = null;
 var observer = null;
 var listenerDocument = null;
