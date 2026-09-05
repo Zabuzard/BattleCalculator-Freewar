@@ -194,14 +194,22 @@ function processElement(cellElement) {
   }
 
   // Player wins
+  var npcType = getNpcType(cellElement);
+
   var resultText =
     " ( -" + lifeLoss + " LP, = " + (playerExpectedLife - lifeLoss) + " LP )";
+  if (npcType) {
+    resultText += " [" + npcType + "]";
+  }
 
   addBattleCalculatorResult($npcFastAttackElement, resultText, "victory");
 
-  // Critical life loss gets orange. Otherwise the result is green.
   if (lifeLoss >= critLifeThreshold || npcName == "Undaron") {
     $npcFastAttackElement.css("color", "#E7971F");
+  } else if (npcType === "Unique-NPC") {
+    $npcFastAttackElement.css("color", "#B58EDC");
+  } else if (npcType === "Gruppen-NPC") {
+    $npcFastAttackElement.css("color", "#D8B94A");
   } else {
     $npcFastAttackElement.css("color", "#73D773");
   }
@@ -218,6 +226,18 @@ function processElement(cellElement) {
   }
 
   return true;
+}
+
+function getNpcType(cellElement) {
+  if (cellElement.classList.contains("npctypeGruppenNPC")) {
+    return "Gruppen-NPC";
+  }
+
+  if (cellElement.classList.contains("npctypeUniqueNPC")) {
+    return "Unique-NPC";
+  }
+
+  return null;
 }
 
 function extractNpcStats(cellElement) {
