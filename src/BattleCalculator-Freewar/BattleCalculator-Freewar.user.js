@@ -91,7 +91,7 @@ function routine() {
     }
 
     initNpcData();
-    initCriticalSpecialNpc();
+    initForbiddenNpcs();
     initNpcCorrections();
 
     var npcs = doc.querySelectorAll(".listusersrow.npcrow");
@@ -111,8 +111,10 @@ function routine() {
 function processElement(cellElement) {
   // Fix fallback player data
   var playerExpectedLife = extractStatValue("Lifepoints", 1000);
-  var playerStrength = extractStatValue("Attackpower", 3580 + 200);
-  var playerDefense = extractStatValue("Defensepower", 1177 + 230);
+  var playerStrengthHands = extractStatValue("AttackpowerHands", 3580);
+  var playerStrengthWeapon = extractStatValue("AttackpowerWeapon", 200);
+  var playerDefenseHands = extractStatValue("DefensepowerHands", 1177);
+  var playerDefenseWeapon = extractStatValue("DefensepowerWeapon", 230);
 
   // Threshold at which lifepoint loss is critical
   var critLifeThreshold = 200;
@@ -125,9 +127,7 @@ function processElement(cellElement) {
     return false;
   }
 
-  if (
-    $npcFastAttackElement.find("." + battleCalculatorResultClass).length > 0
-  ) {
+  if ($npcFastAttackElement.find("." + battleCalculatorResultClass).length > 0) {
     return $npcFastAttackElement.data("battlecalculator-known") === true;
   }
 
@@ -137,26 +137,24 @@ function processElement(cellElement) {
   npcName = npcName.replace(/\(.*\)/gi, "").trim();
 
   var npcStats = extractNpcStats(cellElement);
+  var npcType = getNpcType(cellElement);
+  var lifeLoss = computeOutcome(playerExpectedLife, playerStrengthHands, playerStrengthWeapon, playerDefenseHands, playerDefenseWeapon, npcName, npcType, npcStats);
+  var resultText = ""
+  if (npcType) {
+    resultText += " [" + npcType + "]";
+  }
 
-  var lifeLoss = computeOutcome(
-    playerExpectedLife,
-    playerStrength,
-    playerDefense,
-    npcName,
-    npcStats,
-  );
-
-  if (isCriticalSpecialNpc(npcName)) {
+  if (isForbiddenNpc(npcName)) {
     $npcFastAttackElement.removeAttr("href");
     $npcFastAttackElement.removeAttr("onclick");
     $npcFastAttackElement.off("click");
 
-    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (crit-special)");
+    resultText += " (do not attack)";
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText);
 
     var highlightColor = "#FF0000";
-    $npcFastAttackElement.css("color", highlightColor);
-    $resultElement.css("color", highlightColor);
-
+    $npcFastAttackElement.css({ color: highlightColor, fontWeight: "bold" });
+    $resultElement.css({ color: highlightColor, fontWeight: "bold" });
     $npcFastAttackElement.data("battlecalculator-known", true);
 
     return true;
@@ -173,18 +171,12 @@ function processElement(cellElement) {
     $npcFastAttackElement.removeAttr("onclick");
     $npcFastAttackElement.off("click");
 
-    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (Defeat)", "defeat");
+    resultText += " (Defeat)";
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "defeat");
 
     var highlightColor = "#FF0000";
-    $npcFastAttackElement.css({
-      color: highlightColor,
-      fontWeight: "bold",
-    });
-    $resultElement.css({
-      color: highlightColor,
-      fontWeight: "bold",
-    });
-
+    $npcFastAttackElement.css({ color: highlightColor, fontWeight: "bold" });
+    $resultElement.css({ color: highlightColor, fontWeight: "bold" });
     $npcFastAttackElement.data("battlecalculator-known", true);
 
     return true;
@@ -192,31 +184,28 @@ function processElement(cellElement) {
 
   // NPC unknown
   if (lifeLoss == -2) {
-    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (unknown)", "unknown");
+    resultText += " (unknown)";
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "unknown");
 
     var highlightColor = "#040088";
     $npcFastAttackElement.css("color", highlightColor);
     $resultElement.css("color", highlightColor);
-
     $npcFastAttackElement.data("battlecalculator-known", false);
 
     return false;
   }
 
   // Player wins
-  var npcType = getNpcType(cellElement);
-
-  var resultText =
-    " ( -" + lifeLoss + " LP, = " + (playerExpectedLife - lifeLoss) + " LP )";
-  if (npcType) {
-    resultText += " [" + npcType + "]";
-  }
-
+  var resultText = " ( -" + lifeLoss + " LP, = " + (playerExpectedLife - lifeLoss) + " LP )" + resultText;
   var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "victory");
 
   var highlightColor = "#73D773";
-  if (lifeLoss >= critLifeThreshold || npcName == "Undaron") {
+  if (lifeLoss >= critLifeThreshold) {
     highlightColor = "#E7971F";
+  } else if (npcType === "Superresistence-NPC") {
+    highlightColor = "#ff449e";
+  } else if (npcType === "Resistence-NPC") {
+    highlightColor = "#ff7499";
   } else if (npcType === "Unique-NPC") {
     highlightColor = "#B58EDC";
   } else if (npcType === "Gruppen-NPC") {
@@ -224,7 +213,6 @@ function processElement(cellElement) {
   }
   $npcFastAttackElement.css("color", highlightColor);
   $resultElement.css("color", highlightColor);
-
   $npcFastAttackElement.data("battlecalculator-known", true);
 
   // Auto-attack if enabled
@@ -240,11 +228,17 @@ function processElement(cellElement) {
 }
 
 function getNpcType(cellElement) {
-  if (cellElement.classList.contains("npctypeGruppenNPC")) {
-    return "Gruppen-NPC";
+  if (cellElement.classList.contains("npctypeSuperresistenzNPC") || cellElement.classList.contains("npctypeSuperresistenzNPCMutation")) {
+    return "Superresistence-NPC";
+  }
+  if (cellElement.classList.contains("npctypeResistenzNPC") || cellElement.classList.contains("npctypeResistenzNPCMutation")) {
+    return "Resistence-NPC";
   }
 
-  if (cellElement.classList.contains("npctypeUniqueNPC")) {
+  if (cellElement.classList.contains("npctypeGruppenNPC") || cellElement.classList.contains("npctypeGruppenNPCMutation")) {
+    return "Gruppen-NPC";
+  }
+  if (cellElement.classList.contains("npctypeUniqueNPC") || cellElement.classList.contains("npctypeUniqueNPCMutation")) {
     return "Unique-NPC";
   }
 
@@ -288,13 +282,7 @@ function isIgnoredNpc(npcName) {
   return upperedNpcName in npcData;
 }
 
-function computeOutcome(
-  playerLife,
-  playerStrength,
-  playerDefense,
-  npcName,
-  npcStats,
-) {
+function computeOutcome(playerLife, playerStrengthHands, playerStrengthWeapon, playerDefenseHands, playerDefenseWeapon, npcName, npcType, npcStats) {
   var npcStrength = npcStats.strength || getNpcStrength(npcName);
   var npcLife = npcStats.life || getNpcLife(npcName);
 
@@ -302,7 +290,28 @@ function computeOutcome(
     return -2;
   }
 
-  // A hit deals at most one point of damage
+  if (npcType === "Superresistence-NPC")
+  {
+    // Must be killed in a single hit with weapons only
+    if (playerStrengthWeapon < npcLife) {
+      return -1;
+    }
+    var lifeLoss = Math.max(1, npcStrength - playerDefense);
+    if (lifeLoss >= playerLife) {
+      return -1;
+    } else {
+      return lifeLoss;
+    }
+  }
+
+  var playerStrength = playerStrengthHands + playerStrengthWeapon;
+  var playerDefense = playerDefenseHands + playerDefenseWeapon;
+  if (npcType === "Resistence-NPC") {
+    playerStrength = playerStrengthWeapon;
+    playerDefense = playerDefenseWeapon;
+  }
+
+  // A hit deals at least one point of damage
   var howManyHits = Math.ceil(npcLife / playerStrength);
   var lifeLossPerHit = Math.max(1, npcStrength - playerDefense);
   var lifeLoss = Math.max(1, Math.ceil(howManyHits * lifeLossPerHit));
@@ -358,16 +367,16 @@ function getNpcLife(npcName) {
   }
 }
 
-function isCriticalSpecialNpc(npcName) {
+function isForbiddenNpc(npcName) {
   var foundNpc = false;
 
-  if (npcName in critSpecialNpc) {
+  if (npcName in forbiddenNpc) {
     foundNpc = true;
   } else {
     // Try it with the first character uppered
     var upperedNpcName = firstCharToUpperCase(npcName);
 
-    if (upperedNpcName in critSpecialNpc) {
+    if (upperedNpcName in forbiddenNpc) {
       foundNpc = true;
     }
   }
@@ -433,52 +442,8 @@ function extractStatValue(statName, fallbackValue) {
   }
 }
 
-function initCriticalSpecialNpc() {
-  // Resistance NPC
-  critSpecialNpc["Achtsamer Stachelschuss-Igel"] = true;
-  critSpecialNpc["Blutresistenz-NPC"] = true;
-  critSpecialNpc["Bockiger Stier"] = true;
-  critSpecialNpc["Dickhäutiger Graustein-Bär"] = true;
-  critSpecialNpc["Gepanzertes Undaron"] = true;
-  critSpecialNpc["Glitschige Dunkelsee-Qualle"] = true;
-  critSpecialNpc["Robuster Morschgreifer"] = true;
-  critSpecialNpc["Sandiger Wirbelwind"] = true;
-  critSpecialNpc["Schnelle Bernstein-Raupe"] = true;
-  critSpecialNpc["Schneller Stororaptor"] = true;
-  critSpecialNpc["Schneller Tempelkrabbler"] = true;
-  critSpecialNpc["Schnelles Tonar-Reptil"] = true;
-  critSpecialNpc["Stepto-Waran"] = true;
-  critSpecialNpc["Transparenter Schatten"] = true;
-  critSpecialNpc["Wachsamer Frostwolf"] = true;
-  critSpecialNpc["Wendige Glypra"] = true;
-  critSpecialNpc["Zäher Spindelschreiter"] = true;
-  // Super Resistance NPC
-  critSpecialNpc["Absorbierende Dunkelsee-Qualle"] = true;
-  critSpecialNpc["Alter Frostwolf"] = true;
-  critSpecialNpc["Alter Stororaptor"] = true;
-  critSpecialNpc["Bestialisches Tonar-Reptil"] = true;
-  critSpecialNpc["Dickhäutiger Goldballenwurm"] = true;
-  critSpecialNpc["Enormer Graustein-Bär"] = true;
-  critSpecialNpc["Flinker Bernstein-Falke"] = true;
-  critSpecialNpc["Glypra-Spion"] = true;
-  critSpecialNpc["Metallischer Morschgreifer"] = true;
-  critSpecialNpc["Resistenter Schatten"] = true;
-  critSpecialNpc["Resistenter Stachelschuss-Igel"] = true;
-  critSpecialNpc["Robuster Spindelschreiter"] = true;
-  critSpecialNpc["Schnellflatter-Schmetterling"] = true;
-  critSpecialNpc["Unverwüstliches Undaron"] = true;
-  critSpecialNpc["Zäher Ontolon"] = true;
-  critSpecialNpc["Riesiger Wolf"] = true;
-  critSpecialNpc["Goldene Giftschlange"] = true;
-  critSpecialNpc["Nebelschwinge"] = true;
-  // Special exeptions
-  critSpecialNpc["kräftiger Graustein-Bär"] = true;
-  critSpecialNpc["Spindelschreiter"] = true;
-  critSpecialNpc["Schmerzstein"] = true;
-  critSpecialNpc["Gezeiten-Garnele"] = true;
-  critSpecialNpc["Schimmerstein"] = true;
-  critSpecialNpc["Sprengpockenspinne"] = true;
-  critSpecialNpc["lernfähiger Spindelschreiter"] = true;
+function initForbiddenNpcs() {
+  forbiddenNpc["Schimmerstein"] = true;
 }
 
 function initNpcCorrections() {
@@ -489,11 +454,20 @@ function initNpcCorrections() {
   npcData["Jungwurzelwächter"] = [264, 315024];
   npcData["lernfähiger Spindelschreiter"] = [17510, 171752848];
   npcData["Quellwurzel"] = [1423, 10774129];
+  npcData["Undaron"] = [2630, 500000];
+  npcData["Geister-Undaron"] = [2630, 500000];
+  npcData["Gepanzertes Undaron"] = [2243, 4504];
+  npcData["Rosa Undaron"] = [400, 10000];
+  npcData["Unverwüstliches Undaron"] = [1500, 310];
+  npcData["Schmerzstein"] = [9501, 1189625];
+  npcData["Gezeiten-Garnele"] = [6419, 211730947];
+  npcData["kräftiger Graustein-Bär"] = [10000, 12800];
+  npcData["Sprengpockenspinne"] = [10000, 100000];
 }
 
 // Create NPC data structure objects
 var npcData = new Object();
-var critSpecialNpc = new Object();
+var forbiddenNpc = new Object();
 
 /*
  * Main watchdog.

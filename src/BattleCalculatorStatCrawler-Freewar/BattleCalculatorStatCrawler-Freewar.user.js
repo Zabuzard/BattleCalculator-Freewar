@@ -77,26 +77,26 @@ function routine() {
 		lifepoints = lifepoints.replace("(", "").replace(".", "");
 	}
 	setStatValue('Lifepoints', lifepoints);
+
 	// Extract attack power
-	var attackpower = Number($('p#listrow_attackp').text().replace(/\./g, '').match(/\d+/)[0]);
+	var attackpowerHands = Number($('p#listrow_attackp').text().replace(/\./g, '').match(/\d+/)[0]);
 	var attackpowerWeapon = $('p#listrow_attackp').text().replace(/\./g, '').match(/\+\d+/);
 	if (attackpowerWeapon != null && attackpowerWeapon.length > 0) {
 		// Strip the '+' symbol
 		attackpowerWeapon = Number(attackpowerWeapon[0].substring(1));
-		// Add the power of the weapon
-		attackpower += attackpowerWeapon;
 	}
-	setStatValue('Attackpower', attackpower);
+	setStatValue('AttackpowerHands', attackpowerHands);
+	setStatValue('AttackpowerWeapon', attackpowerWeapon);
+	
 	// Extract defense power
-	var defensepower = Number($('p#listrow_defensep').text().replace(/\./g, '').match(/\d+/)[0]);
+	var defensepowerHands = Number($('p#listrow_defensep').text().replace(/\./g, '').match(/\d+/)[0]);
 	var defensepowerWeapon = $('p#listrow_defensep').text().replace(/\./g, '').match(/\+\d+/);
 	if (defensepowerWeapon != null && defensepowerWeapon.length > 0) {
 		// Strip the '+' symbol
 		defensepowerWeapon = Number(defensepowerWeapon[0].substring(1));
-		// Add the power of the weapon
-		defensepower += defensepowerWeapon;
 	}
-	setStatValue('Defensepower', defensepower);
+	setStatValue('DefensepowerHands', defensepowerHands);
+	setStatValue('DefensepowerWeapon', defensepowerWeapon);
 }
 
 // Start the routine function
