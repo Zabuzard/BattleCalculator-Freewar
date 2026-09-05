@@ -152,7 +152,7 @@ function processElement(cellElement) {
     resultText += " (do not attack)";
     var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText);
 
-    var highlightColor = "#FF0000";
+    var highlightColor = "#fd4646";
     $npcFastAttackElement.css({ color: highlightColor, fontWeight: "bold" });
     $resultElement.css({ color: highlightColor, fontWeight: "bold" });
     $npcFastAttackElement.data("battlecalculator-known", true);
@@ -174,7 +174,7 @@ function processElement(cellElement) {
     resultText += " (Defeat)";
     var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "defeat");
 
-    var highlightColor = "#FF0000";
+    var highlightColor = "#fd4646";
     $npcFastAttackElement.css({ color: highlightColor, fontWeight: "bold" });
     $resultElement.css({ color: highlightColor, fontWeight: "bold" });
     $npcFastAttackElement.data("battlecalculator-known", true);
