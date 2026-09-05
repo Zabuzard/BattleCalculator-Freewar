@@ -147,12 +147,15 @@ function processElement(cellElement) {
   );
 
   if (isCriticalSpecialNpc(npcName)) {
-    addBattleCalculatorResult($npcFastAttackElement, " (crit-special)");
-
-    $npcFastAttackElement.css("color", "#F00F0F");
     $npcFastAttackElement.removeAttr("href");
     $npcFastAttackElement.removeAttr("onclick");
     $npcFastAttackElement.off("click");
+
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (crit-special)");
+
+    var highlightColor = "#FF0000";
+    $npcFastAttackElement.css("color", highlightColor);
+    $resultElement.css("color", highlightColor);
 
     $npcFastAttackElement.data("battlecalculator-known", true);
 
@@ -170,10 +173,15 @@ function processElement(cellElement) {
     $npcFastAttackElement.removeAttr("onclick");
     $npcFastAttackElement.off("click");
 
-    addBattleCalculatorResult($npcFastAttackElement, " (Defeat)", "defeat");
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (Defeat)", "defeat");
 
+    var highlightColor = "#FF0000";
     $npcFastAttackElement.css({
-      color: "red",
+      color: highlightColor,
+      fontWeight: "bold",
+    });
+    $resultElement.css({
+      color: highlightColor,
       fontWeight: "bold",
     });
 
@@ -184,9 +192,11 @@ function processElement(cellElement) {
 
   // NPC unknown
   if (lifeLoss == -2) {
-    addBattleCalculatorResult($npcFastAttackElement, " (unknown)", "unknown");
+    var $resultElement = addBattleCalculatorResult($npcFastAttackElement, " (unknown)", "unknown");
 
-    $npcFastAttackElement.css("color", "#040088");
+    var highlightColor = "#040088";
+    $npcFastAttackElement.css("color", highlightColor);
+    $resultElement.css("color", highlightColor);
 
     $npcFastAttackElement.data("battlecalculator-known", false);
 
@@ -202,17 +212,18 @@ function processElement(cellElement) {
     resultText += " [" + npcType + "]";
   }
 
-  addBattleCalculatorResult($npcFastAttackElement, resultText, "victory");
+  var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "victory");
 
+  var highlightColor = "#73D773";
   if (lifeLoss >= critLifeThreshold || npcName == "Undaron") {
-    $npcFastAttackElement.css("color", "#E7971F");
+    highlightColor = "#E7971F";
   } else if (npcType === "Unique-NPC") {
-    $npcFastAttackElement.css("color", "#B58EDC");
+    highlightColor = "#B58EDC";
   } else if (npcType === "Gruppen-NPC") {
-    $npcFastAttackElement.css("color", "#D8B94A");
-  } else {
-    $npcFastAttackElement.css("color", "#73D773");
+    highlightColor = "#D8B94A";
   }
+  $npcFastAttackElement.css("color", highlightColor);
+  $resultElement.css("color", highlightColor);
 
   $npcFastAttackElement.data("battlecalculator-known", true);
 
