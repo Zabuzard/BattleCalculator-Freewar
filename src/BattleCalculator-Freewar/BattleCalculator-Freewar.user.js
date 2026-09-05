@@ -196,11 +196,12 @@ function processElement(cellElement) {
   }
 
   // Player wins
-  var resultText = " ( -" + lifeLoss + " LP, = " + (playerExpectedLife - lifeLoss) + " LP )" + resultText;
+  var lifepointsAfterCombat = playerExpectedLife - lifeLoss;
+  var resultText = " ( -" + lifeLoss + " LP, = " + lifepointsAfterCombat + " LP )" + resultText;
   var $resultElement = addBattleCalculatorResult($npcFastAttackElement, resultText, "victory");
 
   var highlightColor = "#73D773";
-  if (lifeLoss >= critLifeThreshold) {
+  if (lifeLoss >= critLifeThreshold || lifepointsAfterCombat < 200) {
     highlightColor = "#E7971F";
   } else if (npcType === "Superresistence-NPC") {
     highlightColor = "#ff449e";
