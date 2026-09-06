@@ -291,6 +291,13 @@ function computeOutcome(playerLife, playerStrengthHands, playerStrengthWeapon, p
     return -2;
   }
 
+  var playerStrength = playerStrengthHands + playerStrengthWeapon;
+  var playerDefense = playerDefenseHands + playerDefenseWeapon;
+  if (npcType === "Resistence-NPC") {
+    playerStrength = playerStrengthWeapon;
+    playerDefense = playerDefenseWeapon;
+  }
+
   if (npcType === "Superresistence-NPC")
   {
     // Must be killed in a single hit with weapons only
@@ -303,13 +310,6 @@ function computeOutcome(playerLife, playerStrengthHands, playerStrengthWeapon, p
     } else {
       return lifeLoss;
     }
-  }
-
-  var playerStrength = playerStrengthHands + playerStrengthWeapon;
-  var playerDefense = playerDefenseHands + playerDefenseWeapon;
-  if (npcType === "Resistence-NPC") {
-    playerStrength = playerStrengthWeapon;
-    playerDefense = playerDefenseWeapon;
   }
 
   // A hit deals at least one point of damage
