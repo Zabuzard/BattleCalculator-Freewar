@@ -112,9 +112,9 @@ function processElement(cellElement) {
   // Fix fallback player data
   var playerExpectedLife = extractStatValue("Lifepoints", 1000);
   var playerStrengthHands = extractStatValue("AttackpowerHands", 3580);
-  var playerStrengthWeapon = extractStatValue("AttackpowerWeapon", 200);
+  var playerStrengthWeapon = extractStatValue("AttackpowerWeapon", 0);
   var playerDefenseHands = extractStatValue("DefensepowerHands", 1177);
-  var playerDefenseWeapon = extractStatValue("DefensepowerWeapon", 230);
+  var playerDefenseWeapon = extractStatValue("DefensepowerWeapon", 0);
 
   // Threshold at which lifepoint loss is critical
   var critLifeThreshold = 200;
